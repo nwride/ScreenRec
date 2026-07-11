@@ -1,0 +1,13 @@
+# Compilación
+/build/
+/.build/
+
+# Artefactos de instalación (se publican como Releases, no en el repo)
+*.dmg
+*.pkg
+
+# Ajustes locales de Claude Code
+/.claude/
+
+# macOS
+.DS_Store
