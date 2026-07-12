@@ -74,18 +74,17 @@ Notas:
 
 ## Instalar
 
-Elige uno de los dos formatos (`make dmg` o `make pkg`):
+**Descarga la última versión** en la página de [Releases](https://github.com/nwride/ScreenRec/releases/latest):
 
-- **DMG** (recomendado para una app de barra de menús): abre `build/ScreenRec-1.0.0.dmg`
-  y arrastra **ScreenRec** a la carpeta **Aplicaciones**.
-- **PKG**: abre `build/ScreenRec-1.0.0.pkg` y sigue el asistente; instala en `/Applications`.
+- **DMG** (recomendado): abre `ScreenRec-1.0.0.dmg` y arrastra **ScreenRec** a **Aplicaciones**.
+- **PKG**: abre `ScreenRec-1.0.0.pkg` y sigue el asistente; instala en `/Applications`.
 
-Conviene instalar en `/Applications` (no ejecutar desde `build/`) para que
-«Abrir al iniciar sesión» apunte a una ubicación estable.
+O compílalos tú con `make dmg` / `make pkg` (quedan en `build/`).
 
-Como la app está firmada de forma local (ad-hoc), en **otro** Mac Gatekeeper la
-bloqueará la primera vez: ábrela con clic derecho → **Abrir**. En tu propio Mac,
-donde se compiló, se abre sin avisos.
+Como la app está firmada de forma local (ad-hoc, sin Developer ID), macOS mostrará
+un aviso la primera vez: ábrela con **clic derecho → Abrir**. Conviene instalar en
+`/Applications` (no ejecutar desde `build/`) para que «Abrir al iniciar sesión»
+apunte a una ubicación estable.
 
 ## macOS vuelve a pedir el permiso tras recompilar
 
