@@ -16,10 +16,40 @@ enum ConvertSelfTest {
             toGIF(args)
         } else if args.contains("--to-mp4") {
             toMP4(args)
+        } else if args.contains("--trim-test") {
+            toTrim(args)
         } else {
             print("modo de prueba desconocido")
             exit(2)
         }
+    }
+
+    // MARK: - Recorte
+
+    private static func toTrim(_ args: [String]) -> Never {
+        guard let idx = args.firstIndex(of: "--trim-test"), args.count > idx + 4 else {
+            print("uso: --trim-test <entrada> <salida.mp4> <inicio_s> <fin_s>")
+            exit(2)
+        }
+        let input = URL(fileURLWithPath: args[idx + 1])
+        let output = URL(fileURLWithPath: args[idx + 2])
+        let startS = Double(args[idx + 3]) ?? 0
+        let endS = Double(args[idx + 4]) ?? 0
+        let range = CMTimeRange(start: CMTime(seconds: startS, preferredTimescale: 600),
+                                end: CMTime(seconds: endS, preferredTimescale: 600))
+        Task {
+            do {
+                try await VideoTrimmer.export(source: input, range: range, to: output) { _ in }
+                let dur = try await AVAsset(url: output).load(.duration).seconds
+                print(String(format: "TRIM OK: %@ | duración recortada %.2f s (pedido %.2f s)",
+                             output.path, dur, endS - startS))
+                exit(0)
+            } catch {
+                print("TRIM FALLO: \(error.localizedDescription)")
+                exit(1)
+            }
+        }
+        dispatchMain()
     }
 
     // MARK: - Generar vídeo sintético

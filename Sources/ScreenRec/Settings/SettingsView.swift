@@ -15,25 +15,20 @@ struct SettingsView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .padding(16)
+            .padding([.horizontal, .top], 14)
+            .padding(.bottom, 6)
 
             Group {
-                if tab == 0 {
-                    GeneralPane()
-                } else if tab == 1 {
-                    VideoPane()
-                } else if tab == 2 {
-                    BorderPane()
-                } else if tab == 3 {
-                    GIFPane()
-                } else {
-                    ShortcutsPane()
+                switch tab {
+                case 0: GeneralPane()
+                case 1: VideoPane()
+                case 2: BorderPane()
+                case 3: GIFPane()
+                default: ShortcutsPane()
                 }
             }
-
-            Spacer(minLength: 0)
         }
-        .frame(width: 480, height: 470)
+        .frame(width: 560, height: 500)
     }
 }
 
@@ -41,61 +36,62 @@ struct SettingsView: View {
 
 private struct GeneralPane: View {
     @AppStorage(Preferences.Key.afterRecording) private var afterRecording = AfterRecording.ask.rawValue
+    @AppStorage(Preferences.Key.trimBeforeSaving) private var trimBeforeSaving = false
     @AppStorage(Preferences.Key.autosaveFolder) private var autosaveFolder = Preferences.desktopPath
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var quickActionsInstalled = QuickActionsInstaller.isInstalled
 
     var body: some View {
         Form {
-            Picker("Al terminar de grabar:", selection: $afterRecording) {
-                Text("Preguntar dónde guardar").tag(AfterRecording.ask.rawValue)
-                Text("Guardar en una carpeta fija").tag(AfterRecording.autosave.rawValue)
+            Section {
+                Picker("Al terminar de grabar:", selection: $afterRecording) {
+                    Text("Preguntar dónde guardar").tag(AfterRecording.ask.rawValue)
+                    Text("Guardar en una carpeta fija").tag(AfterRecording.autosave.rawValue)
+                }
+                if afterRecording == AfterRecording.autosave.rawValue {
+                    HStack {
+                        Text("Carpeta:")
+                        Spacer()
+                        Text((autosaveFolder as NSString).abbreviatingWithTildeInPath)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .foregroundColor(.secondary)
+                        Button("Elegir…") { chooseFolder() }
+                    }
+                }
             }
-            .pickerStyle(.radioGroup)
 
-            if afterRecording == AfterRecording.autosave.rawValue {
+            Section {
+                Toggle("Recortar antes de guardar", isOn: $trimBeforeSaving)
+            } footer: {
+                Text("Al terminar de grabar, abre un editor para acortar el comienzo o el final antes de guardar (TrimmingCut).")
+            }
+
+            Section {
+                Toggle("Abrir ScreenRec al iniciar sesión", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { newValue in
+                        launchAtLogin = LaunchAtLogin.set(newValue)
+                    }
+            }
+
+            Section {
                 HStack {
-                    Text("Carpeta:")
-                    Text((autosaveFolder as NSString).abbreviatingWithTildeInPath)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Convertir vídeos con el clic derecho")
+                        Text(quickActionsInstalled ? "Instaladas en Finder → Acciones rápidas" : "No instaladas")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                     Spacer()
-                    Button("Elegir…") { chooseFolder() }
+                    Button(quickActionsInstalled ? "Quitar" : "Instalar") {
+                        toggleQuickActions(install: !quickActionsInstalled)
+                    }
                 }
+            } footer: {
+                Text("Añade «Convertir vídeo / a GIF con ScreenRec» al clic derecho sobre archivos de vídeo en Finder.")
             }
-
-            Divider()
-                .padding(.vertical, 4)
-
-            Toggle("Abrir ScreenRec al iniciar sesión", isOn: $launchAtLogin)
-                .onChange(of: launchAtLogin) { newValue in
-                    // El sistema puede rechazar el cambio; reflejar el estado real.
-                    launchAtLogin = LaunchAtLogin.set(newValue)
-                }
-
-            Divider()
-                .padding(.vertical, 4)
-
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Convertir vídeos con el clic derecho")
-                    Text(quickActionsInstalled ? "Instaladas en Finder → Acciones rápidas" : "No instaladas")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                if quickActionsInstalled {
-                    Button("Quitar") { toggleQuickActions(install: false) }
-                } else {
-                    Button("Instalar") { toggleQuickActions(install: true) }
-                }
-            }
-            Text("Añade «Convertir vídeo / a GIF con ScreenRec» al clic derecho sobre archivos de vídeo en Finder.")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
-        .padding(20)
+        .formStyle(.grouped)
         .onAppear {
             launchAtLogin = LaunchAtLogin.isEnabled
             quickActionsInstalled = QuickActionsInstaller.isInstalled
@@ -148,42 +144,42 @@ private struct VideoPane: View {
 
     var body: some View {
         Form {
-            Picker("Codec:", selection: $codec) {
-                Text("H.264 (más compatible)").tag(VideoCodecChoice.h264.rawValue)
-                Text("HEVC / H.265 (ocupa menos)").tag(VideoCodecChoice.hevc.rawValue)
-            }
-            Picker("Calidad (bitrate):", selection: $quality) {
-                Text("Alta").tag(QualityChoice.high.rawValue)
-                Text("Media").tag(QualityChoice.medium.rawValue)
-                Text("Baja").tag(QualityChoice.low.rawValue)
-                Text("Personalizada").tag(QualityChoice.custom.rawValue)
-            }
-            if quality == QualityChoice.custom.rawValue {
-                HStack {
-                    Slider(value: $customMbps, in: 1...50, step: 1) {
-                        Text("Bitrate:")
-                    }
-                    Text("\(Int(customMbps)) Mb/s")
-                        .frame(width: 60, alignment: .trailing)
-                        .foregroundColor(.secondary)
+            Section {
+                Picker("Codec:", selection: $codec) {
+                    Text("H.264 (más compatible)").tag(VideoCodecChoice.h264.rawValue)
+                    Text("HEVC / H.265 (ocupa menos)").tag(VideoCodecChoice.hevc.rawValue)
                 }
+                Picker("Calidad (bitrate):", selection: $quality) {
+                    Text("Alta").tag(QualityChoice.high.rawValue)
+                    Text("Media").tag(QualityChoice.medium.rawValue)
+                    Text("Baja").tag(QualityChoice.low.rawValue)
+                    Text("Personalizada").tag(QualityChoice.custom.rawValue)
+                }
+                if quality == QualityChoice.custom.rawValue {
+                    HStack {
+                        Text("Bitrate:")
+                        Slider(value: $customMbps, in: 1...50, step: 1)
+                        Text("\(Int(customMbps)) Mb/s")
+                            .frame(width: 60, alignment: .trailing)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                Picker("Fotogramas por segundo:", selection: $fps) {
+                    Text("15").tag(15)
+                    Text("24").tag(24)
+                    Text("30").tag(30)
+                    Text("60").tag(60)
+                }
+                Picker("Resolución:", selection: $resolution) {
+                    Text("Nativa (Retina, 2x)").tag(CaptureResolution.native.rawValue)
+                    Text("Reducida (1x, ocupa menos)").tag(CaptureResolution.reduced.rawValue)
+                }
+                Toggle("Grabar el puntero del ratón", isOn: $showsCursor)
+            } footer: {
+                Text("Los cambios se aplican a partir de la siguiente grabación.")
             }
-            Picker("Fotogramas por segundo:", selection: $fps) {
-                Text("15").tag(15)
-                Text("24").tag(24)
-                Text("30").tag(30)
-                Text("60").tag(60)
-            }
-            Picker("Resolución:", selection: $resolution) {
-                Text("Nativa (Retina, 2x)").tag(CaptureResolution.native.rawValue)
-                Text("Reducida (1x, ocupa menos)").tag(CaptureResolution.reduced.rawValue)
-            }
-            Toggle("Grabar el puntero del ratón", isOn: $showsCursor)
-            Text("Los cambios se aplican a partir de la siguiente grabación.")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
-        .padding(20)
+        .formStyle(.grouped)
     }
 }
 
@@ -198,27 +194,28 @@ private struct BorderPane: View {
 
     var body: some View {
         Form {
-            ColorPicker("Color del recuadro durante la grabación:", selection: $color, supportsOpacity: true)
-                .onChange(of: color) { newValue in
-                    Preferences.shared.borderColor = NSColor(newValue)
-                }
+            Section {
+                ColorPicker("Color del recuadro durante la grabación:", selection: $color, supportsOpacity: true)
+                    .onChange(of: color) { newValue in
+                        Preferences.shared.borderColor = NSColor(newValue)
+                    }
+            } footer: {
+                Text("Este borde se muestra alrededor del área mientras grabas; no aparece en el vídeo.")
+            }
 
-            VStack {
-                Text("Vista previa")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            Section("Vista previa") {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color(nsColor: .underPageBackgroundColor))
                     Rectangle()
                         .strokeBorder(color, lineWidth: 3)
-                        .frame(width: 200, height: 110)
+                        .frame(width: 220, height: 120)
                 }
-                .frame(height: 150)
+                .frame(maxWidth: .infinity)
+                .frame(height: 170)
             }
-            .padding(.top, 8)
         }
-        .padding(20)
+        .formStyle(.grouped)
     }
 }
 
@@ -228,36 +225,42 @@ private struct GIFPane: View {
     @AppStorage(Preferences.Key.gifFPS) private var gifFPS = 10
     @AppStorage(Preferences.Key.gifScale) private var gifScale = 0.5
     @AppStorage(Preferences.Key.gifMaxMB) private var gifMaxMB = 100
+    @AppStorage(Preferences.Key.gifSaveNextToSource) private var gifSaveNextToSource = true
 
     var body: some View {
         Form {
-            Text("Ajustes para «Convertir a GIF con ScreenRec» (clic derecho en un vídeo → Servicios).")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Section {
+                Toggle("Guardar el GIF junto al vídeo original", isOn: $gifSaveNextToSource)
+            } footer: {
+                Text("Al convertir a GIF desde el clic derecho, guarda el GIF en la misma carpeta que el vídeo, sin preguntar. Desmárcalo para elegir la ubicación cada vez.")
+            }
 
-            Picker("Fotogramas por segundo:", selection: $gifFPS) {
-                Text("5").tag(5)
-                Text("10").tag(10)
-                Text("15").tag(15)
+            Section {
+                Picker("Fotogramas por segundo:", selection: $gifFPS) {
+                    Text("5").tag(5)
+                    Text("10").tag(10)
+                    Text("15").tag(15)
+                }
+                Picker("Escala:", selection: $gifScale) {
+                    Text("100 %").tag(1.0)
+                    Text("75 %").tag(0.75)
+                    Text("50 %").tag(0.5)
+                }
+                HStack {
+                    Text("Avisar si el GIF supera:")
+                    Spacer()
+                    TextField("", value: $gifMaxMB, format: .number)
+                        .frame(width: 64)
+                        .multilineTextAlignment(.trailing)
+                    Text("MB")
+                }
+            } header: {
+                Text("Ajustes de «Convertir a GIF con ScreenRec» (clic derecho → Acciones rápidas).")
+            } footer: {
+                Text("Si la conversión estimada supera ese tamaño, ScreenRec avisa antes de empezar (y cancela por defecto) para no bloquear el sistema con vídeos largos. Para PowerPoint, insertar el MP4 directamente suele pesar mucho menos que un GIF.")
             }
-            Picker("Escala:", selection: $gifScale) {
-                Text("100 %").tag(1.0)
-                Text("75 %").tag(0.75)
-                Text("50 %").tag(0.5)
-            }
-            HStack {
-                Text("Avisar si el GIF supera:")
-                Spacer()
-                TextField("", value: $gifMaxMB, format: .number)
-                    .frame(width: 60)
-                    .multilineTextAlignment(.trailing)
-                Text("MB")
-            }
-            Text("Si la conversión estimada supera ese tamaño, ScreenRec avisa antes de empezar (y cancela por defecto) para no bloquear el sistema con vídeos largos. Para PowerPoint, insertar el MP4 directamente suele pesar mucho menos que un GIF.")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
-        .padding(20)
+        .formStyle(.grouped)
     }
 }
 
@@ -266,27 +269,30 @@ private struct GIFPane: View {
 private struct ShortcutsPane: View {
     var body: some View {
         Form {
-            HStack {
-                Text("Iniciar selección / grabación:")
-                Spacer()
-                HotkeyRecorder(kind: .start)
-                    .frame(width: 160, height: 26)
+            Section {
+                HStack {
+                    Text("Iniciar selección / grabación:")
+                    Spacer()
+                    HotkeyRecorder(kind: .start)
+                        .frame(width: 160, height: 26)
+                }
+                HStack {
+                    Text("Detener grabación:")
+                    Spacer()
+                    HotkeyRecorder(kind: .stop)
+                        .frame(width: 160, height: 26)
+                }
+                HStack {
+                    Spacer()
+                    Button("Restaurar atajos por defecto") {
+                        Preferences.shared.startShortcut = .defaultStart
+                        Preferences.shared.stopShortcut = .defaultStop
+                    }
+                }
+            } footer: {
+                Text("Haz clic en un campo y pulsa la combinación (debe incluir ⌃, ⌥ o ⌘). ESC cancela. Los atajos funcionan con cualquier app en primer plano.")
             }
-            HStack {
-                Text("Detener grabación:")
-                Spacer()
-                HotkeyRecorder(kind: .stop)
-                    .frame(width: 160, height: 26)
-            }
-            Button("Restaurar atajos por defecto") {
-                Preferences.shared.startShortcut = .defaultStart
-                Preferences.shared.stopShortcut = .defaultStop
-            }
-            .padding(.top, 8)
-            Text("Haz clic en un campo y pulsa la combinación (debe incluir ⌃, ⌥ o ⌘). ESC cancela. Los atajos funcionan con cualquier app en primer plano.")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
-        .padding(20)
+        .formStyle(.grouped)
     }
 }

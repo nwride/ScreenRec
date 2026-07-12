@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 APP_NAME="ScreenRec"
-VERSION="1.0.0"
+VERSION="1.1.0"
 VOL_NAME="$APP_NAME"
 BUILD_DIR="build"
 APP="$BUILD_DIR/$APP_NAME.app"

@@ -8,10 +8,11 @@ un recuadro con el ratón y graba esa zona hasta que lo detienes. Guarda en MP4
 
 | Acción | Cómo |
 |---|---|
-| Iniciar selección | `⌃⌥R` (configurable) o clic izquierdo en el icono de la barra |
+| Iniciar selección | `⇧⌘8` (configurable) o clic izquierdo en el icono de la barra |
 | Dibujar el área | Arrastra con la cruceta; ESC o clic suelto cancelan |
 | Grabar | Empieza al soltar el ratón; verás un recuadro de color (no sale en el vídeo) |
-| Detener | `⌃⌥S` (configurable), clic izquierdo en el icono, o menú |
+| Detener | `⇧⌘9` (configurable), clic izquierdo en el icono, o menú |
+| Recortar (opcional) | Si activas «Recortar antes de guardar», se abre un editor de recorte (inicio/fin) |
 | Guardar | Panel de guardado, o carpeta fija según Ajustes |
 | Menú / Ajustes | Clic **derecho** en el icono de la barra |
 
@@ -43,13 +44,16 @@ rápidas**. Si no salen al instante, reinicia Finder (`killall Finder`).
 
 ## Ajustes
 
-- **General**: preguntar dónde guardar o carpeta fija; abrir ScreenRec al iniciar
-  sesión; instalar/quitar las acciones de clic derecho.
+- **General**: preguntar dónde guardar o carpeta fija; **recortar antes de guardar**
+  (abre un editor de recorte al terminar); abrir ScreenRec al iniciar sesión;
+  instalar/quitar las acciones de clic derecho.
 - **Vídeo**: codec H.264/HEVC, calidad Alta/Media/Baja o bitrate manual (Mb/s),
   15/24/30/60 fps, resolución nativa Retina (2x) o reducida (1x), grabar o no el puntero.
 - **Recuadro**: color (con opacidad) del borde visible durante la grabación.
-- **GIF**: fps y escala de la conversión, y el límite de tamaño para el aviso.
-- **Atajos**: ambos atajos globales, personalizables (exigen ⌃, ⌥ o ⌘).
+- **GIF**: guardar el GIF junto al vídeo original (por defecto) o preguntar; fps y
+  escala de la conversión, y el límite de tamaño para el aviso.
+- **Atajos**: ambos atajos globales, personalizables (exigen ⌃, ⌥ o ⌘). Por defecto
+  `⇧⌘8` (iniciar) y `⇧⌘9` (detener).
 
 ## Compilar
 
@@ -58,8 +62,8 @@ Requisitos: Command Line Tools (no hace falta Xcode).
 ```sh
 make app                     # compila y ensambla build/ScreenRec.app
 make run                     # compila, cierra la instancia anterior y abre la app
-make dmg                     # crea build/ScreenRec-1.0.0.dmg (arrastrar a Aplicaciones)
-make pkg                     # crea build/ScreenRec-1.0.0.pkg (instalador a /Applications)
+make dmg                     # crea build/ScreenRec-1.1.0.dmg (arrastrar a Aplicaciones)
+make pkg                     # crea build/ScreenRec-1.1.0.pkg (instalador a /Applications)
 make quick-actions           # instala las Acciones rápidas de Finder
 make uninstall-quick-actions # las quita
 make clean
@@ -76,8 +80,8 @@ Notas:
 
 **Descarga la última versión** en la página de [Releases](https://github.com/nwride/ScreenRec/releases/latest):
 
-- **DMG** (recomendado): abre `ScreenRec-1.0.0.dmg` y arrastra **ScreenRec** a **Aplicaciones**.
-- **PKG**: abre `ScreenRec-1.0.0.pkg` y sigue el asistente; instala en `/Applications`.
+- **DMG** (recomendado): abre `ScreenRec-1.1.0.dmg` y arrastra **ScreenRec** a **Aplicaciones**.
+- **PKG**: abre `ScreenRec-1.1.0.pkg` y sigue el asistente; instala en `/Applications`.
 
 O compílalos tú con `make dmg` / `make pkg` (quedan en `build/`).
 

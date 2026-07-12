@@ -19,6 +19,7 @@ final class Preferences {
 
     enum Key {
         static let afterRecording     = "afterRecording"
+        static let trimBeforeSaving   = "trimBeforeSaving"
         static let autosaveFolder     = "autosaveFolder"
         static let codec              = "codec"
         static let quality            = "quality"
@@ -30,6 +31,7 @@ final class Preferences {
         static let gifFPS             = "gifFPS"
         static let gifScale           = "gifScale"
         static let gifMaxMB           = "gifMaxMB"
+        static let gifSaveNextToSource = "gifSaveNextToSource"
         static let startKeyCode       = "startKeyCode"
         static let startModifiers     = "startModifiers"
         static let stopKeyCode        = "stopKeyCode"
@@ -42,6 +44,7 @@ final class Preferences {
     private init() {
         d.register(defaults: [
             Key.afterRecording: AfterRecording.ask.rawValue,
+            Key.trimBeforeSaving: false,
             Key.autosaveFolder: Self.desktopPath,
             Key.codec: VideoCodecChoice.h264.rawValue,
             Key.quality: QualityChoice.high.rawValue,
@@ -53,6 +56,7 @@ final class Preferences {
             Key.gifFPS: 10,
             Key.gifScale: 0.5,
             Key.gifMaxMB: 100,
+            Key.gifSaveNextToSource: true,
             Key.startKeyCode: Int(Shortcut.defaultStart.keyCode),
             Key.startModifiers: Int(Shortcut.defaultStart.modifiers.rawValue),
             Key.stopKeyCode: Int(Shortcut.defaultStop.keyCode),
@@ -70,6 +74,9 @@ final class Preferences {
     var afterRecording: AfterRecording {
         AfterRecording(rawValue: d.string(forKey: Key.afterRecording) ?? "") ?? .ask
     }
+
+    /// Abrir el editor de recorte al terminar de grabar, antes de guardar.
+    var trimBeforeSaving: Bool { d.bool(forKey: Key.trimBeforeSaving) }
 
     var autosaveFolderURL: URL {
         URL(fileURLWithPath: d.string(forKey: Key.autosaveFolder) ?? Self.desktopPath)
@@ -163,6 +170,9 @@ final class Preferences {
         let value = d.integer(forKey: Key.gifMaxMB)
         return value > 0 ? value : 100
     }
+
+    /// Guardar el GIF junto al vídeo original (sin preguntar) al convertir.
+    var gifSaveNextToSource: Bool { d.bool(forKey: Key.gifSaveNextToSource) }
 
     // MARK: - Atajos
 

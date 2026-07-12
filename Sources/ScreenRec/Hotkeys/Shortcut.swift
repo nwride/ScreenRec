@@ -6,8 +6,8 @@ struct Shortcut: Equatable {
     var keyCode: UInt32
     var modifiers: NSEvent.ModifierFlags
 
-    static let defaultStart = Shortcut(keyCode: UInt32(kVK_ANSI_R), modifiers: [.control, .option])
-    static let defaultStop = Shortcut(keyCode: UInt32(kVK_ANSI_S), modifiers: [.control, .option])
+    static let defaultStart = Shortcut(keyCode: UInt32(kVK_ANSI_8), modifiers: [.shift, .command])
+    static let defaultStop = Shortcut(keyCode: UInt32(kVK_ANSI_9), modifiers: [.shift, .command])
 
     static func == (lhs: Shortcut, rhs: Shortcut) -> Bool {
         lhs.keyCode == rhs.keyCode && lhs.modifiers.rawValue == rhs.modifiers.rawValue

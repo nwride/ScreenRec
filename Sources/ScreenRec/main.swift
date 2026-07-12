@@ -11,7 +11,7 @@ if cliArgs.contains("--convert-gif") || cliArgs.contains("--convert-video") {
     exit(0)
 } else if cliArgs.contains("--selftest") {
     SelfTest.main(arguments: cliArgs)
-} else if cliArgs.contains("--make-test-video") || cliArgs.contains("--to-gif") || cliArgs.contains("--to-mp4") {
+} else if cliArgs.contains("--make-test-video") || cliArgs.contains("--to-gif") || cliArgs.contains("--to-mp4") || cliArgs.contains("--trim-test") {
     ConvertSelfTest.run(cliArgs)
 } else {
     let app = NSApplication.shared

@@ -58,7 +58,16 @@ final class ConversionCoordinator {
                     continue // por defecto se cancela
                 }
             }
-            guard let destination = askDestination(for: url, ext: "gif", suffix: "") else { continue }
+            let destination: URL
+            if prefs.gifSaveNextToSource {
+                // Guardar junto al vídeo original, sin preguntar.
+                destination = Self.uniqueURL(folder: url.deletingLastPathComponent(),
+                                             base: url.deletingPathExtension().lastPathComponent,
+                                             ext: "gif")
+            } else {
+                guard let chosen = askDestination(for: url, ext: "gif", suffix: "") else { continue }
+                destination = chosen
+            }
             let hud = ProgressHUD(label: "Exportando GIF de \(url.lastPathComponent)…")
             hud.show()
             do {
@@ -118,6 +127,17 @@ final class ConversionCoordinator {
 
     private func revealInFinder(_ url: URL) {
         NSWorkspace.shared.activateFileViewerSelecting([url])
+    }
+
+    /// URL única en `folder` (añade « 2», « 3»… si el archivo ya existe).
+    private static func uniqueURL(folder: URL, base: String, ext: String) -> URL {
+        var url = folder.appendingPathComponent(base).appendingPathExtension(ext)
+        var counter = 2
+        while FileManager.default.fileExists(atPath: url.path) {
+            url = folder.appendingPathComponent("\(base) \(counter)").appendingPathExtension(ext)
+            counter += 1
+        }
+        return url
     }
 
     private func presentError(title: String, error: Error) {

@@ -20,6 +20,7 @@ final class AppController: NSObject {
     private let selection = SelectionController()
     private let recorder = RecordingCoordinator()
     private let output = OutputHandler()
+    private let trimmer = TrimmerController()
     private var settingsController: SettingsWindowController?
     private var startTask: Task<Void, Never>?
 
@@ -94,7 +95,11 @@ final class AppController: NSObject {
             }
             switch result {
             case .success(let url):
-                await self.output.handle(tempURL: url, statusBar: self.statusBar)
+                var toSave = url
+                if Preferences.shared.trimBeforeSaving {
+                    toSave = await self.trimmer.trim(url: url)
+                }
+                await self.output.handle(tempURL: toSave, statusBar: self.statusBar)
             case .failure(let error):
                 Self.presentError(title: "La grabación falló", error: error)
             }

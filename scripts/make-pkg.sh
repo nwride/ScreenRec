@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 
 APP_NAME="ScreenRec"
 BUNDLE_ID="io.github.nwride.ScreenRec"
-VERSION="1.0.0"
+VERSION="1.1.0"
 BUILD_DIR="build"
 APP="$BUILD_DIR/$APP_NAME.app"
 PKG="$BUILD_DIR/$APP_NAME-$VERSION.pkg"
